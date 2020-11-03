@@ -5,6 +5,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import SeatSelect from "./SeatSelect";
 import Confirmation from "./Confirmation";
+import Reservation from "./Reservation"
 import GlobalStyles, { themeVars } from "./GlobalStyles";
 
 const App = () => {
@@ -17,7 +18,17 @@ const App = () => {
   useEffect(() => {
     // TODO: check localStorage for an id
     // if yes, get data from server and add it to state
-  }, [setUserReservation]);
+    const currentUserId = localStorage.getItem('id');
+    const reservation = JSON.parse(currentUserId);
+    if (reservation) {
+      console.log(reservation.id);
+      fetch(`/reservations/${reservation.id}`)
+        .then((res) => {return res.json()})
+        .then((data) => {const info = data.reservation;
+          updateUserReservation(info);
+        });
+    }
+  }, []);
 
   return (
     <BrowserRouter>
@@ -26,10 +37,13 @@ const App = () => {
       <Main>
         <Switch>
           <Route exact path="/">
-            <SeatSelect />
+            <SeatSelect updateUserReservation={updateUserReservation}/>
           </Route>
           <Route exact path="/confirmed">
-            <Confirmation />
+            <Confirmation userReservation={userReservation}/>
+          </Route>
+          <Route exact path='/view-reservation'>
+            <Reservation userReservation={userReservation}/>
           </Route>
           <Route path="">404: Oops!</Route>
         </Switch>

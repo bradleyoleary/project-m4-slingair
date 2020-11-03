@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import FlightSelect from "./FlightSelect";
 import Form from "./Form";
 
@@ -48,6 +48,23 @@ const SeatSelect = ({ updateUserReservation }) => {
       // TODO: if 201, add reservation id (received from server) to localStorage
       // TODO: if 201, redirect to /confirmed (push)
       // TODO: if error from server, show error to user (stretch goal)
+      fetch('/reservations', {
+        method: 'POST',
+        body: JSON.stringify({...formData, flight: flightNumber}),
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      })
+      .then((res) => res.json())
+      .then((json) => {
+        const { status, data } = json;
+        if (status === 201) {
+          //console.log(FormData)
+          setSubStatus('confirmed');
+          const reservation ={ ...data, flight: flightNumber }
+          localStorage.setItem('id', JSON.stringify(reservation));
+          updateUserReservation(reservation);
+          history.push('/confirmed')
+        } 
+      });
     }
   };
 
@@ -67,6 +84,7 @@ const SeatSelect = ({ updateUserReservation }) => {
         disabled={disabled}
         subStatus={subStatus}
       />
+      {subStatus === 'confirmed' && history.push('/confirmed')}
     </>
   );
 };
